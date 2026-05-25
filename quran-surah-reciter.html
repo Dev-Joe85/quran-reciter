@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quran Surah Reciter</title>
+  <style>
+    :root {
+      --bg: #07110c;
+      --panel: rgba(255,255,255,.08);
+      --panel2: rgba(255,255,255,.12);
+      --text: #f7f1e4;
+      --muted: #b9b2a4;
+      --gold: #d9b86f;
+      --green: #7ecb8f;
+      --danger: #ff8b8b;
+      --border: rgba(255,255,255,.14);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 10% 0%, rgba(126,203,143,.22), transparent 32rem),
+        radial-gradient(circle at 90% 10%, rgba(217,184,111,.18), transparent 30rem),
+        linear-gradient(140deg, #06100b 0%, #10160f 55%, #070a07 100%);
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: .045;
+      background-image:
+        linear-gradient(rgba(255,255,255,.7) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.7) 1px, transparent 1px);
+      background-size: 42px 42px;
+      mask-image: linear-gradient(to bottom, black, transparent 80%);
+    }
+
+    button, input, select {
+      font: inherit;
+    }
+
+    .app {
+      width: min(1220px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0 40px;
+    }
+
+    .card {
+      border: 1px solid var(--border);
+      background: linear-gradient(145deg, rgba(255,255,255,.1), rgba(255,255,255,.055));
+      border-radius: 28px;
+      box-shadow: 0 24px 70px rgba(0,0,0,.36);
+      backdrop-filter: blur(18px);
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.15fr .85fr;
+      gap: 18px;
+      align-items: stretch;
+      margin-bottom: 18px;
+    }
+
+    .hero-main {
+      padding: 30px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-main::after {
+      content: "ٱلْقُرْآن";
+      position: absolute;
+      right: 28px;
+      bottom: -12px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(56px, 12vw, 150px);
+      color: rgba(255,255,255,.045);
+      direction: rtl;
+      white-space: nowrap;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      margin-bottom: 14px;
+      padding: 8px 12px;
+      color: var(--gold);
+      border: 1px solid rgba(217,184,111,.28);
+      background: rgba(217,184,111,.075);
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    h1 {
+      margin: 0;
+      max-width: 760px;
+      font-size: clamp(34px, 5vw, 68px);
+      line-height: .94;
+      letter-spacing: -.055em;
+    }
+
+    .subtitle {
+      margin: 18px 0 0;
+      max-width: 740px;
+      color: var(--muted);
+      font-size: clamp(15px, 2vw, 18px);
+      line-height: 1.7;
+    }
+
+    .hero-side {
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .now-playing {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 190px;
+      padding: 22px;
+      border-radius: 22px;
+      background: rgba(0,0,0,.18);
+      border: 1px solid rgba(255,255,255,.1);
+    }
+
+    .small-label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .09em;
+    }
+
+    .current-title {
+      margin-top: 8px;
+      font-size: 26px;
+      font-weight: 850;
+      letter-spacing: -.025em;
+    }
+
+    .current-arabic {
+      margin-top: 8px;
+      color: var(--gold);
+      direction: rtl;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 30px;
+      line-height: 1.3;
+    }
+
+    .progress-wrap {
+      margin-top: 18px;
+    }
+
+    .progress-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 8px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .bar {
+      height: 10px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: rgba(255,255,255,.11);
+    }
+
+    .bar span {
+      display: block;
+      height: 100%;
+      width: 0%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--green), var(--gold));
+      transition: width .15s linear;
+    }
+
+    .controls {
+      padding: 18px;
+      margin-bottom: 18px;
+    }
+
+    .controls-grid {
+      display: grid;
+      grid-template-columns: 1.2fr .9fr .9fr;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 850;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    input, select {
+      width: 100%;
+      min-height: 48px;
+      color: var(--text);
+      background: rgba(0,0,0,.26);
+      border: 1px solid rgba(255,255,255,.13);
+      border-radius: 16px;
+      outline: none;
+      padding: 0 14px;
+    }
+
+    select option {
+      color: #111;
+      background: #fff;
+    }
+
+    input:focus, select:focus {
+      border-color: rgba(217,184,111,.75);
+      box-shadow: 0 0 0 4px rgba(217,184,111,.12);
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .btn {
+      min-height: 46px;
+      border: 0;
+      border-radius: 16px;
+      padding: 0 16px;
+      cursor: pointer;
+      color: #07110b;
+      background: linear-gradient(135deg, var(--gold), #fff0b3);
+      font-weight: 900;
+      box-shadow: 0 12px 30px rgba(217,184,111,.18);
+      transition: transform .14s ease, opacity .14s ease, box-shadow .14s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 16px 36px rgba(217,184,111,.24);
+    }
+
+    .btn.secondary {
+      color: var(--text);
+      background: rgba(255,255,255,.1);
+      border: 1px solid rgba(255,255,255,.14);
+      box-shadow: none;
+    }
+
+    .btn.danger {
+      color: #1b0505;
+      background: linear-gradient(135deg, var(--danger), #ffd6d6);
+    }
+
+    .btn:disabled {
+      cursor: not-allowed;
+      opacity: .55;
+      transform: none;
+    }
+
+    .status {
+      min-height: 22px;
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 350px 1fr;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .surah-list {
+      padding: 14px;
+      max-height: 74vh;
+      overflow: auto;
+      position: sticky;
+      top: 18px;
+    }
+
+    .surah-button {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 44px 1fr auto;
+      gap: 12px;
+      align-items: center;
+      padding: 12px;
+      margin-bottom: 8px;
+      color: var(--text);
+      text-align: left;
+      background: rgba(255,255,255,.055);
+      border: 1px solid transparent;
+      border-radius: 18px;
+      cursor: pointer;
+      transition: background .14s ease, border-color .14s ease, transform .14s ease;
+    }
+
+    .surah-button:hover {
+      background: rgba(255,255,255,.1);
+      transform: translateY(-1px);
+    }
+
+    .surah-button.active {
+      background: rgba(217,184,111,.13);
+      border-color: rgba(217,184,111,.42);
+    }
+
+    .surah-number {
+      width: 40px;
+      height: 40px;
+      display: grid;
+      place-items: center;
+      color: var(--gold);
+      border-radius: 14px;
+      background: rgba(217,184,111,.1);
+      font-weight: 950;
+    }
+
+    .surah-name {
+      display: block;
+      font-weight: 850;
+      letter-spacing: -.015em;
+    }
+
+    .surah-meta {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .surah-arabic-name {
+      color: var(--gold);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 20px;
+      direction: rtl;
+    }
+
+    .reader {
+      padding: 18px;
+      min-height: 520px;
+    }
+
+    .reader-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 16px;
+      margin-bottom: 12px;
+      border: 1px solid rgba(255,255,255,.11);
+      border-radius: 22px;
+      background: rgba(0,0,0,.17);
+    }
+
+    .reader-title h2 {
+      margin: 0;
+      font-size: clamp(28px, 4vw, 46px);
+      line-height: 1;
+      letter-spacing: -.055em;
+    }
+
+    .reader-title p {
+      margin: 9px 0 0;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .reader-arabic-title {
+      min-width: 140px;
+      text-align: right;
+      color: var(--gold);
+      direction: rtl;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(34px, 5vw, 58px);
+      line-height: 1.1;
+    }
+
+    .ayah-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .ayah {
+      display: grid;
+      grid-template-columns: 56px 1fr;
+      gap: 14px;
+      padding: 16px;
+      border-radius: 22px;
+      border: 1px solid rgba(255,255,255,.1);
+      background: rgba(255,255,255,.055);
+      transition: background .16s ease, border-color .16s ease, transform .16s ease;
+    }
+
+    .ayah.active {
+      background: rgba(217,184,111,.14);
+      border-color: rgba(217,184,111,.43);
+      transform: translateY(-1px);
+    }
+
+    .ayah-index {
+      width: 46px;
+      height: 46px;
+      display: grid;
+      place-items: center;
+      color: var(--gold);
+      background: rgba(0,0,0,.2);
+      border: 1px solid rgba(217,184,111,.22);
+      border-radius: 16px;
+      font-weight: 950;
+    }
+
+    .arabic {
+      margin: 0;
+      direction: rtl;
+      text-align: right;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(25px, 4vw, 39px);
+      line-height: 2.05;
+      color: #fffaf0;
+    }
+
+    .translation {
+      margin: 14px 0 0;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.75;
+    }
+
+    .ayah-actions {
+      margin-top: 14px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .tiny-btn {
+      min-height: 34px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.14);
+      color: var(--text);
+      background: rgba(255,255,255,.08);
+      padding: 0 11px;
+      cursor: pointer;
+      font-weight: 800;
+      font-size: 12px;
+    }
+
+    .empty {
+      padding: 42px 18px;
+      text-align: center;
+      color: var(--muted);
+      border: 1px dashed rgba(255,255,255,.16);
+      border-radius: 22px;
+      line-height: 1.7;
+    }
+
+    .loader {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 3px solid rgba(255,255,255,.25);
+      border-top-color: var(--gold);
+      animation: spin .9s linear infinite;
+      vertical-align: -4px;
+      margin-right: 8px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @media (max-width: 980px) {
+      .hero, .layout, .controls-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .surah-list {
+        position: static;
+        max-height: 380px;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .app {
+        width: min(100% - 20px, 1220px);
+        padding-top: 14px;
+      }
+
+      .hero-main, .hero-side, .controls, .reader {
+        padding: 14px;
+        border-radius: 22px;
+      }
+
+      .reader-header {
+        flex-direction: column;
+      }
+
+      .reader-arabic-title {
+        width: 100%;
+      }
+
+      .ayah {
+        grid-template-columns: 1fr;
+      }
+
+      .arabic {
+        font-size: 27px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="hero">
+      <div class="card hero-main">
+        <div class="eyebrow">Quran Surah Reciter</div>
+        <h1>Listen to every surah with Arabic text and translation.</h1>
+        <p class="subtitle">
+          Pick any surah, choose a reciter, then play it ayah by ayah with live highlighting.
+          Press Recite All to continue from the selected surah through An-Naas.
+        </p>
+      </div>
+
+      <aside class="card hero-side">
+        <div class="now-playing">
+          <div>
+            <div class="small-label">Now Playing</div>
+            <div id="currentTitle" class="current-title">Nothing selected</div>
+            <div id="currentArabic" class="current-arabic">ٱلْقُرْآن</div>
+          </div>
+          <div class="progress-wrap">
+            <div class="progress-top">
+              <span id="ayahProgressText">Ayah 0 of 0</span>
+              <span id="timeProgressText">0:00 / 0:00</span>
+            </div>
+            <div class="bar"><span id="timeBar"></span></div>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="card controls">
+      <div class="controls-grid">
+        <div class="field">
+          <label for="searchInput">Search Surah</label>
+          <input id="searchInput" type="search" placeholder="Type a number, English name, or Arabic name" autocomplete="off" />
+        </div>
+
+        <div class="field">
+          <label for="reciterSelect">Reciter</label>
+          <select id="reciterSelect">
+            <option value="ar.alafasy">Mishary Rashid Alafasy</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="translationSelect">Translation</label>
+          <select id="translationSelect">
+            <option value="en.asad">English, Muhammad Asad</option>
+            <option value="en.pickthall">English, Pickthall</option>
+            <option value="en.yusufali">English, Yusuf Ali</option>
+            <option value="none">No translation</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="button-row">
+        <button id="playButton" class="btn">Play Surah</button>
+        <button id="pauseButton" class="btn secondary">Pause</button>
+        <button id="resumeButton" class="btn secondary">Resume</button>
+        <button id="stopButton" class="btn danger">Stop</button>
+        <button id="reciteAllButton" class="btn secondary">Recite All</button>
+        <button id="prevAyahButton" class="btn secondary">Previous Ayah</button>
+        <button id="nextAyahButton" class="btn secondary">Next Ayah</button>
+      </div>
+
+      <div id="status" class="status" aria-live="polite"></div>
+    </section>
+
+    <section class="layout">
+      <aside class="card surah-list" id="surahList" aria-label="Surah list"></aside>
+
+      <section class="card reader">
+        <div class="reader-header">
+          <div class="reader-title">
+            <h2 id="readerTitle">Select a surah</h2>
+            <p id="readerMeta">Choose from the list, then press Play Surah.</p>
+          </div>
+          <div id="readerArabicTitle" class="reader-arabic-title">سورة</div>
+        </div>
+        <div id="ayahList" class="ayah-list">
+          <div class="empty">Loading surah list...</div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const API_BASE = "https://api.alquran.cloud/v1";
+
+    const elements = {
+      searchInput: document.getElementById("searchInput"),
+      reciterSelect: document.getElementById("reciterSelect"),
+      translationSelect: document.getElementById("translationSelect"),
+      playButton: document.getElementById("playButton"),
+      pauseButton: document.getElementById("pauseButton"),
+      resumeButton: document.getElementById("resumeButton"),
+      stopButton: document.getElementById("stopButton"),
+      reciteAllButton: document.getElementById("reciteAllButton"),
+      prevAyahButton: document.getElementById("prevAyahButton"),
+      nextAyahButton: document.getElementById("nextAyahButton"),
+      status: document.getElementById("status"),
+      surahList: document.getElementById("surahList"),
+      ayahList: document.getElementById("ayahList"),
+      readerTitle: document.getElementById("readerTitle"),
+      readerMeta: document.getElementById("readerMeta"),
+      readerArabicTitle: document.getElementById("readerArabicTitle"),
+      currentTitle: document.getElementById("currentTitle"),
+      currentArabic: document.getElementById("currentArabic"),
+      ayahProgressText: document.getElementById("ayahProgressText"),
+      timeProgressText: document.getElementById("timeProgressText"),
+      timeBar: document.getElementById("timeBar")
+    };
+
+    let surahs = [];
+    let currentSurah = null;
+    let currentArabicAyahs = [];
+    let currentTranslationAyahs = [];
+    let currentAudioAyahs = [];
+    let currentAyahIndex = 0;
+    let reciteAllMode = false;
+    let isLoading = false;
+
+    const audio = new Audio();
+    audio.preload = "auto";
+
+    function normalize(value) {
+      return String(value || "").toLowerCase().replace(/[\u064B-\u065F\u0670]/g, "").trim();
+    }
+
+    function setStatus(message, loading = false) {
+      elements.status.innerHTML = loading ? `<span class="loader"></span>${message}` : message;
+    }
+
+    function formatTime(seconds) {
+      if (!Number.isFinite(seconds) || seconds < 0) return "0:00";
+      const total = Math.floor(seconds);
+      const minutes = Math.floor(total / 60);
+      const secs = total % 60;
+      return `${minutes}:${String(secs).padStart(2, "0")}`;
+    }
+
+    async function fetchJson(url) {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`Request failed: ${response.status}`);
+      const payload = await response.json();
+      if (payload.code !== 200 || payload.status !== "OK") throw new Error(payload.status || "API error");
+      return payload.data;
+    }
+
+    function renderReciters(reciters) {
+      const filtered = reciters
+        .filter(item => item.identifier && (item.language === "ar" || item.identifier.startsWith("ar.")))
+        .sort((a, b) => String(a.englishName || a.name).localeCompare(String(b.englishName || b.name)));
+
+      elements.reciterSelect.innerHTML = filtered.map(item => {
+        const label = item.englishName || item.name || item.identifier;
+        return `<option value="${item.identifier}">${label}</option>`;
+      }).join("");
+
+      if ([...elements.reciterSelect.options].some(option => option.value === "ar.alafasy")) {
+        elements.reciterSelect.value = "ar.alafasy";
+      }
+    }
+
+    function renderSurahList() {
+      const query = normalize(elements.searchInput.value);
+      const visible = surahs.filter(surah => {
+        const haystack = normalize(`${surah.number} ${surah.name} ${surah.englishName} ${surah.englishNameTranslation} ${surah.revelationType}`);
+        return !query || haystack.includes(query);
+      });
+
+      elements.surahList.innerHTML = visible.map(surah => `
+        <button class="surah-button ${currentSurah && surah.number === currentSurah.number ? "active" : ""}" data-surah="${surah.number}">
+          <span class="surah-number">${surah.number}</span>
+          <span>
+            <span class="surah-name">${surah.englishName}</span>
+            <span class="surah-meta">${surah.englishNameTranslation}, ${surah.numberOfAyahs} ayahs</span>
+          </span>
+          <span class="surah-arabic-name">${surah.name}</span>
+        </button>
+      `).join("") || `<div class="empty">No surahs match that search.</div>`;
+    }
+
+    function updateHeaders() {
+      if (!currentSurah) return;
+      elements.readerTitle.textContent = `${currentSurah.number}. ${currentSurah.englishName}`;
+      elements.readerMeta.textContent = `${currentSurah.englishNameTranslation}, ${currentSurah.revelationType}, ${currentSurah.numberOfAyahs} ayahs.`;
+      elements.readerArabicTitle.textContent = currentSurah.name;
+      elements.currentTitle.textContent = currentSurah.englishName;
+      elements.currentArabic.textContent = currentSurah.name;
+      elements.ayahProgressText.textContent = `Ayah ${currentAudioAyahs.length ? currentAyahIndex + 1 : 0} of ${currentAudioAyahs.length || currentSurah.numberOfAyahs}`;
+    }
+
+    function selectSurah(number) {
+      const found = surahs.find(surah => surah.number === Number(number));
+      if (!found) return;
+      stopAudio(false);
+      currentSurah = found;
+      currentArabicAyahs = [];
+      currentTranslationAyahs = [];
+      currentAudioAyahs = [];
+      currentAyahIndex = 0;
+      reciteAllMode = false;
+      updateHeaders();
+      elements.ayahList.innerHTML = `<div class="empty">${currentSurah.englishName} is selected. Press Play Surah to load and recite it.</div>`;
+      renderSurahList();
+      setStatus(`Selected Surah ${currentSurah.number}, ${currentSurah.englishName}.`);
+    }
+
+    function renderAyahs() {
+      if (!currentArabicAyahs.length) {
+        elements.ayahList.innerHTML = `<div class="empty">No ayahs loaded.</div>`;
+        return;
+      }
+
+      elements.ayahList.innerHTML = currentArabicAyahs.map((ayah, index) => {
+        const translation = currentTranslationAyahs[index]?.text || "";
+        return `
+          <article class="ayah ${index === currentAyahIndex ? "active" : ""}" id="ayah-${index + 1}">
+            <div class="ayah-index">${ayah.numberInSurah}</div>
+            <div>
+              <p class="arabic">${ayah.text}</p>
+              ${translation ? `<p class="translation">${translation}</p>` : ""}
+              <div class="ayah-actions">
+                <button class="tiny-btn" data-play-ayah="${index}">Play this ayah</button>
+              </div>
+            </div>
+          </article>
+        `;
+      }).join("");
+    }
+
+    function highlightCurrentAyah() {
+      document.querySelectorAll(".ayah").forEach((node, index) => {
+        node.classList.toggle("active", index === currentAyahIndex);
+      });
+
+      const active = document.getElementById(`ayah-${currentAyahIndex + 1}`);
+      if (active) active.scrollIntoView({ behavior: "smooth", block: "center" });
+
+      elements.ayahProgressText.textContent = `Ayah ${currentAyahIndex + 1} of ${currentAudioAyahs.length || currentSurah.numberOfAyahs}`;
+    }
+
+    async function loadSurahData(force = false) {
+      if (isLoading || !currentSurah) return;
+      if (!force && currentArabicAyahs.length && currentAudioAyahs.length) return;
+
+      isLoading = true;
+      setButtonsDisabled(true);
+      setStatus(`Loading ${currentSurah.englishName}...`, true);
+
+      try {
+        const translationEdition = elements.translationSelect.value;
+        const reciterEdition = elements.reciterSelect.value || "ar.alafasy";
+
+        const arabicPromise = fetchJson(`${API_BASE}/surah/${currentSurah.number}/quran-uthmani`);
+        const audioPromise = fetchJson(`${API_BASE}/surah/${currentSurah.number}/${reciterEdition}`);
+        const translationPromise = translationEdition === "none"
+          ? Promise.resolve({ ayahs: [] })
+          : fetchJson(`${API_BASE}/surah/${currentSurah.number}/${translationEdition}`);
+
+        const [arabicData, audioData, translationData] = await Promise.all([arabicPromise, audioPromise, translationPromise]);
+
+        currentArabicAyahs = arabicData.ayahs || [];
+        currentAudioAyahs = audioData.ayahs || [];
+        currentTranslationAyahs = translationData.ayahs || [];
+
+        currentSurah = {
+          ...currentSurah,
+          name: arabicData.name || currentSurah.name,
+          englishName: arabicData.englishName || currentSurah.englishName,
+          englishNameTranslation: arabicData.englishNameTranslation || currentSurah.englishNameTranslation,
+          numberOfAyahs: arabicData.numberOfAyahs || currentSurah.numberOfAyahs,
+          revelationType: arabicData.revelationType || currentSurah.revelationType
+        };
+
+        updateHeaders();
+        renderAyahs();
+        highlightCurrentAyah();
+        renderSurahList();
+        setStatus(`Loaded ${currentSurah.englishName}.`);
+      } catch (error) {
+        console.error(error);
+        setStatus(`Could not load this surah. Check your internet connection or try another reciter. Error: ${error.message}`);
+      } finally {
+        isLoading = false;
+        setButtonsDisabled(false);
+      }
+    }
+
+    function getAudioUrl(ayah) {
+      return ayah?.audio || ayah?.audioSecondary?.[0] || "";
+    }
+
+    async function playCurrentAyah() {
+      if (!currentAudioAyahs.length) await loadSurahData();
+      const ayah = currentAudioAyahs[currentAyahIndex];
+      const url = getAudioUrl(ayah);
+
+      if (!url) {
+        setStatus("No audio URL found for this ayah. Try another reciter.");
+        return;
+      }
+
+      audio.src = url;
+      highlightCurrentAyah();
+      updateHeaders();
+
+      try {
+        await audio.play();
+        setStatus(`Reciting ${currentSurah.englishName}, ayah ${currentAyahIndex + 1}.`);
+      } catch (error) {
+        console.error(error);
+        setStatus("The browser blocked autoplay. Press Play Surah again after interacting with the page.");
+      }
+    }
+
+    async function playSurah() {
+      if (!currentSurah && surahs[0]) currentSurah = surahs[0];
+      reciteAllMode = false;
+      currentAyahIndex = 0;
+      await loadSurahData();
+      await playCurrentAyah();
+    }
+
+    async function reciteAll() {
+      if (!currentSurah && surahs[0]) currentSurah = surahs[0];
+      reciteAllMode = true;
+      currentAyahIndex = 0;
+      await loadSurahData(true);
+      await playCurrentAyah();
+      setStatus(`Recite All started at ${currentSurah.englishName}.`);
+    }
+
+    function pauseAudio() {
+      audio.pause();
+      setStatus("Paused.");
+    }
+
+    async function resumeAudio() {
+      try {
+        await audio.play();
+        setStatus("Resumed.");
+      } catch {
+        setStatus("Could not resume. Press Play Surah again.");
+      }
+    }
+
+    function stopAudio(updateStatus = true) {
+      audio.pause();
+      audio.removeAttribute("src");
+      audio.load();
+      currentAyahIndex = 0;
+      reciteAllMode = false;
+      elements.timeBar.style.width = "0%";
+      elements.timeProgressText.textContent = "0:00 / 0:00";
+      updateHeaders();
+      if (currentArabicAyahs.length) highlightCurrentAyah();
+      if (updateStatus) setStatus("Stopped.");
+    }
+
+    async function nextAyah() {
+      if (!currentAudioAyahs.length) await loadSurahData();
+
+      if (currentAyahIndex < currentAudioAyahs.length - 1) {
+        currentAyahIndex += 1;
+        await playCurrentAyah();
+        return;
+      }
+
+      if (reciteAllMode) {
+        await nextSurahInAllMode();
+        return;
+      }
+
+      setStatus(`${currentSurah.englishName} finished.`);
+    }
+
+    async function previousAyah() {
+      if (!currentAudioAyahs.length) await loadSurahData();
+      currentAyahIndex = Math.max(0, currentAyahIndex - 1);
+      await playCurrentAyah();
+    }
+
+    async function nextSurahInAllMode() {
+      const next = surahs.find(surah => surah.number === currentSurah.number + 1);
+      if (!next) {
+        stopAudio(false);
+        setStatus("Finished reciting all 114 surahs.");
+        elements.currentTitle.textContent = "Finished";
+        elements.ayahProgressText.textContent = "All surahs completed";
+        return;
+      }
+
+      currentSurah = next;
+      currentArabicAyahs = [];
+      currentTranslationAyahs = [];
+      currentAudioAyahs = [];
+      currentAyahIndex = 0;
+      updateHeaders();
+      renderSurahList();
+      await loadSurahData(true);
+      await playCurrentAyah();
+    }
+
+    function setButtonsDisabled(disabled) {
+      [
+        elements.playButton,
+        elements.reciteAllButton,
+        elements.prevAyahButton,
+        elements.nextAyahButton
+      ].forEach(button => button.disabled = disabled);
+    }
+
+    async function loadInitialData() {
+      setStatus("Loading surahs and reciters...", true);
+
+      try {
+        const [surahData, reciterData] = await Promise.all([
+          fetchJson(`${API_BASE}/surah`),
+          fetchJson(`${API_BASE}/edition?format=audio&language=ar&type=versebyverse`)
+        ]);
+
+        surahs = Array.isArray(surahData) ? surahData : [];
+        currentSurah = surahs[0] || null;
+
+        if (Array.isArray(reciterData) && reciterData.length) renderReciters(reciterData);
+
+        renderSurahList();
+        updateHeaders();
+
+        elements.ayahList.innerHTML = currentSurah
+          ? `<div class="empty">Select any surah, then press Play Surah.</div>`
+          : `<div class="empty">Could not load the surah list.</div>`;
+
+        setStatus("Ready. Select a surah, then press Play Surah.");
+      } catch (error) {
+        console.error(error);
+        elements.ayahList.innerHTML = `<div class="empty">Could not load Quran data. This website needs internet access.</div>`;
+        setStatus(`Could not load data. Error: ${error.message}`);
+      }
+    }
+
+    elements.surahList.addEventListener("click", event => {
+      const button = event.target.closest("[data-surah]");
+      if (!button) return;
+      selectSurah(button.dataset.surah);
+    });
+
+    elements.ayahList.addEventListener("click", async event => {
+      const button = event.target.closest("[data-play-ayah]");
+      if (!button) return;
+      currentAyahIndex = Number(button.dataset.playAyah);
+      reciteAllMode = false;
+      await playCurrentAyah();
+    });
+
+    elements.searchInput.addEventListener("input", renderSurahList);
+
+    elements.reciterSelect.addEventListener("change", () => {
+      currentAudioAyahs = [];
+      stopAudio(false);
+      setStatus("Reciter changed. Press Play Surah to load that reciter.");
+    });
+
+    elements.translationSelect.addEventListener("change", async () => {
+      currentArabicAyahs = [];
+      currentTranslationAyahs = [];
+      currentAudioAyahs = [];
+      stopAudio(false);
+      await loadSurahData(true);
+    });
+
+    elements.playButton.addEventListener("click", playSurah);
+    elements.pauseButton.addEventListener("click", pauseAudio);
+    elements.resumeButton.addEventListener("click", resumeAudio);
+    elements.stopButton.addEventListener("click", () => stopAudio(true));
+    elements.reciteAllButton.addEventListener("click", reciteAll);
+    elements.prevAyahButton.addEventListener("click", previousAyah);
+    elements.nextAyahButton.addEventListener("click", nextAyah);
+
+    audio.addEventListener("ended", nextAyah);
+
+    audio.addEventListener("timeupdate", () => {
+      const current = audio.currentTime || 0;
+      const duration = audio.duration || 0;
+      const percent = duration ? Math.min(100, (current / duration) * 100) : 0;
+      elements.timeBar.style.width = `${percent}%`;
+      elements.timeProgressText.textContent = `${formatTime(current)} / ${formatTime(duration)}`;
+    });
+
+    audio.addEventListener("error", () => {
+      setStatus("Audio failed to play. Try a different reciter or press Next Ayah.");
+    });
+
+    loadInitialData();
+  </script>
+</body>
+</html>

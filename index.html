@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#08110d" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Quran Reciter" />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="./icons/icon-192.png" />
+  <title>Quran Reciter PWA</title>
+  <style>
+    :root {
+      --bg: #08110d;
+      --panel: rgba(255, 255, 255, 0.075);
+      --panel-strong: rgba(255, 255, 255, 0.115);
+      --text: #f4f1e8;
+      --muted: #b9b2a4;
+      --gold: #d9b86f;
+      --green: #7ecb8f;
+      --danger: #ff8b8b;
+      --border: rgba(255, 255, 255, 0.14);
+      --shadow: 0 24px 70px rgba(0, 0, 0, 0.36);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 10% 0%, rgba(126, 203, 143, 0.22), transparent 32rem),
+        radial-gradient(circle at 90% 10%, rgba(217, 184, 111, 0.17), transparent 30rem),
+        linear-gradient(140deg, #06100b 0%, #10160f 55%, #070a07 100%);
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.045;
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.7) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.7) 1px, transparent 1px);
+      background-size: 42px 42px;
+      mask-image: linear-gradient(to bottom, black, transparent 80%);
+    }
+
+    button, input, select {
+      font: inherit;
+    }
+
+    .app {
+      width: min(1220px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0 40px;
+    }
+
+    .card {
+      border: 1px solid var(--border);
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.055));
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    .hero-main {
+      padding: 30px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-main::after {
+      content: "ٱلْقُرْآن";
+      position: absolute;
+      right: 28px;
+      bottom: -12px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(56px, 12vw, 150px);
+      color: rgba(255, 255, 255, 0.045);
+      direction: rtl;
+      white-space: nowrap;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 14px;
+      padding: 8px 12px;
+      color: var(--gold);
+      border: 1px solid rgba(217, 184, 111, 0.28);
+      background: rgba(217, 184, 111, 0.075);
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    h1 {
+      margin: 0;
+      max-width: 760px;
+      font-size: clamp(34px, 5vw, 68px);
+      line-height: 0.94;
+      letter-spacing: -0.055em;
+    }
+
+    .subtitle {
+      margin: 18px 0 0;
+      max-width: 740px;
+      color: var(--muted);
+      font-size: clamp(15px, 2vw, 18px);
+      line-height: 1.7;
+    }
+
+    .hero-side {
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .now-playing {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 220px;
+      padding: 22px;
+      border-radius: 22px;
+      background: rgba(0, 0, 0, 0.18);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .small-label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+    }
+
+    .current-title {
+      margin-top: 8px;
+      font-size: 26px;
+      font-weight: 850;
+      letter-spacing: -0.025em;
+    }
+
+    .current-arabic {
+      margin-top: 8px;
+      color: var(--gold);
+      direction: rtl;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 30px;
+      line-height: 1.3;
+    }
+
+    .progress-wrap {
+      margin-top: 18px;
+    }
+
+    .progress-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 8px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .bar {
+      height: 10px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.11);
+    }
+
+    .bar span {
+      display: block;
+      height: 100%;
+      width: 0%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--green), var(--gold));
+      transition: width 0.15s linear;
+    }
+
+    .install-note {
+      margin-top: 12px;
+      padding: 12px;
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .controls-shell {
+      padding: 18px;
+      margin-bottom: 18px;
+    }
+
+    .controls-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 0.85fr 0.85fr;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 850;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    input, select {
+      width: 100%;
+      min-height: 48px;
+      color: var(--text);
+      background: rgba(0, 0, 0, 0.26);
+      border: 1px solid rgba(255, 255, 255, 0.13);
+      border-radius: 16px;
+      outline: none;
+      padding: 0 14px;
+    }
+
+    select option {
+      color: #111;
+      background: #fff;
+    }
+
+    input:focus, select:focus {
+      border-color: rgba(217, 184, 111, 0.75);
+      box-shadow: 0 0 0 4px rgba(217, 184, 111, 0.12);
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .btn {
+      min-height: 46px;
+      border: 0;
+      border-radius: 16px;
+      padding: 0 16px;
+      cursor: pointer;
+      color: #07110b;
+      background: linear-gradient(135deg, var(--gold), #fff0b3);
+      font-weight: 900;
+      box-shadow: 0 12px 30px rgba(217, 184, 111, 0.18);
+      transition: transform 0.14s ease, opacity 0.14s ease, box-shadow 0.14s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 16px 36px rgba(217, 184, 111, 0.24);
+    }
+
+    .btn.secondary {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      box-shadow: none;
+    }
+
+    .btn.danger {
+      color: #1b0505;
+      background: linear-gradient(135deg, var(--danger), #ffd6d6);
+    }
+
+    .btn:disabled {
+      cursor: not-allowed;
+      opacity: 0.55;
+      transform: none;
+    }
+
+    .status {
+      min-height: 22px;
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 350px 1fr;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .surah-list {
+      padding: 14px;
+      max-height: 74vh;
+      overflow: auto;
+      position: sticky;
+      top: 18px;
+    }
+
+    .surah-button {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 44px 1fr auto;
+      gap: 12px;
+      align-items: center;
+      padding: 12px;
+      margin-bottom: 8px;
+      color: var(--text);
+      text-align: left;
+      background: rgba(255, 255, 255, 0.055);
+      border: 1px solid transparent;
+      border-radius: 18px;
+      cursor: pointer;
+      transition: background 0.14s ease, border-color 0.14s ease, transform 0.14s ease;
+    }
+
+    .surah-button:hover {
+      background: rgba(255, 255, 255, 0.1);
+      transform: translateY(-1px);
+    }
+
+    .surah-button.active {
+      background: rgba(217, 184, 111, 0.13);
+      border-color: rgba(217, 184, 111, 0.42);
+    }
+
+    .surah-number {
+      width: 40px;
+      height: 40px;
+      display: grid;
+      place-items: center;
+      color: var(--gold);
+      border-radius: 14px;
+      background: rgba(217, 184, 111, 0.1);
+      font-weight: 950;
+    }
+
+    .surah-name {
+      display: block;
+      font-weight: 850;
+      letter-spacing: -0.015em;
+    }
+
+    .surah-meta {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .surah-arabic-name {
+      color: var(--gold);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 20px;
+      direction: rtl;
+    }
+
+    .reader {
+      padding: 18px;
+      min-height: 520px;
+    }
+
+    .reader-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 16px;
+      margin-bottom: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.11);
+      border-radius: 22px;
+      background: rgba(0, 0, 0, 0.17);
+    }
+
+    .reader-title h2 {
+      margin: 0;
+      font-size: clamp(28px, 4vw, 46px);
+      line-height: 1;
+      letter-spacing: -0.055em;
+    }
+
+    .reader-title p {
+      margin: 9px 0 0;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .reader-arabic-title {
+      min-width: 140px;
+      text-align: right;
+      color: var(--gold);
+      direction: rtl;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(34px, 5vw, 58px);
+      line-height: 1.1;
+    }
+
+    .ayah-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .ayah {
+      display: grid;
+      grid-template-columns: 56px 1fr;
+      gap: 14px;
+      padding: 16px;
+      border-radius: 22px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.055);
+      transition: background 0.16s ease, border-color 0.16s ease, transform 0.16s ease;
+    }
+
+    .ayah-index {
+      width: 46px;
+      height: 46px;
+      display: grid;
+      place-items: center;
+      color: var(--gold);
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(217, 184, 111, 0.22);
+      border-radius: 16px;
+      font-weight: 950;
+    }
+
+    .arabic {
+      margin: 0;
+      direction: rtl;
+      text-align: right;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(25px, 4vw, 39px);
+      line-height: 2.05;
+      color: #fffaf0;
+    }
+
+    .translation {
+      margin: 14px 0 0;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.75;
+    }
+
+    .empty {
+      padding: 42px 18px;
+      text-align: center;
+      color: var(--muted);
+      border: 1px dashed rgba(255, 255, 255, 0.16);
+      border-radius: 22px;
+      line-height: 1.7;
+    }
+
+    .loader {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 3px solid rgba(255, 255, 255, 0.25);
+      border-top-color: var(--gold);
+      animation: spin 0.9s linear infinite;
+      vertical-align: -4px;
+      margin-right: 8px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @media (max-width: 980px) {
+      .hero, .layout, .controls-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .surah-list {
+        position: static;
+        max-height: 380px;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .app {
+        width: min(100% - 20px, 1220px);
+        padding-top: 14px;
+      }
+
+      .hero-main, .hero-side, .controls-shell, .reader {
+        padding: 14px;
+        border-radius: 22px;
+      }
+
+      .reader-header {
+        flex-direction: column;
+      }
+
+      .reader-arabic-title {
+        width: 100%;
+      }
+
+      .ayah {
+        grid-template-columns: 1fr;
+      }
+
+      .arabic {
+        font-size: 27px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="hero">
+      <div class="card hero-main">
+        <div class="eyebrow">Installable Quran Reciter</div>
+        <h1>Full-surah audio made for phone lock-screen playback.</h1>
+        <p class="subtitle">
+          This PWA plays one whole surah MP3 at a time instead of tiny ayah clips. That makes it much more reliable when your phone screen is off.
+        </p>
+      </div>
+
+      <aside class="card hero-side">
+        <div class="now-playing">
+          <div>
+            <div class="small-label">Now Playing</div>
+            <div id="currentTitle" class="current-title">Loading...</div>
+            <div id="currentArabic" class="current-arabic">ٱلْقُرْآن</div>
+          </div>
+          <div class="progress-wrap">
+            <div class="progress-top">
+              <span id="surahProgressText">Surah 0 of 114</span>
+              <span id="timeProgressText">0:00 / 0:00</span>
+            </div>
+            <div class="bar"><span id="timeBar"></span></div>
+          </div>
+          <div class="install-note" id="installNote">
+            For app mode, upload this folder to HTTPS hosting, then use Add to Home Screen or Install App.
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="card controls-shell">
+      <div class="controls-grid">
+        <div class="field">
+          <label for="searchInput">Search Surah</label>
+          <input id="searchInput" type="search" placeholder="Type a number, English name, or Arabic name" autocomplete="off" />
+        </div>
+
+        <div class="field">
+          <label for="reciterSelect">Full-Surah Reciter</label>
+          <select id="reciterSelect">
+            <option value="mishaari_raashid_al_3afaasee">Mishary Rashid Alafasy</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="translationSelect">Translation</label>
+          <select id="translationSelect">
+            <option value="en.asad">English, Muhammad Asad</option>
+            <option value="en.pickthall">English, Pickthall</option>
+            <option value="en.yusufali">English, Yusuf Ali</option>
+            <option value="none">No translation</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="button-row">
+        <button id="installButton" class="btn secondary" hidden>Install App</button>
+        <button id="playButton" class="btn">Play Surah</button>
+        <button id="pauseButton" class="btn secondary">Pause</button>
+        <button id="resumeButton" class="btn secondary">Resume</button>
+        <button id="stopButton" class="btn danger">Stop</button>
+        <button id="reciteAllButton" class="btn secondary">Recite All From Here</button>
+        <button id="prevSurahButton" class="btn secondary">Previous Surah</button>
+        <button id="nextSurahButton" class="btn secondary">Next Surah</button>
+      </div>
+
+      <div id="status" class="status" aria-live="polite"></div>
+    </section>
+
+    <section class="layout">
+      <aside class="card surah-list" id="surahList" aria-label="Surah list"></aside>
+
+      <section class="card reader">
+        <div class="reader-header">
+          <div class="reader-title">
+            <h2 id="readerTitle">Loading...</h2>
+            <p id="readerMeta">Loading Quran data.</p>
+          </div>
+          <div id="readerArabicTitle" class="reader-arabic-title">سورة</div>
+        </div>
+        <div id="ayahList" class="ayah-list">
+          <div class="empty">Loading surah list...</div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const API_BASE = "https://api.alquran.cloud/v1";
+    const AUDIO_BASE = "https://download.quranicaudio.com/quran/";
+
+    const elements = {
+      searchInput: document.getElementById("searchInput"),
+      reciterSelect: document.getElementById("reciterSelect"),
+      translationSelect: document.getElementById("translationSelect"),
+      installButton: document.getElementById("installButton"),
+      playButton: document.getElementById("playButton"),
+      pauseButton: document.getElementById("pauseButton"),
+      resumeButton: document.getElementById("resumeButton"),
+      stopButton: document.getElementById("stopButton"),
+      reciteAllButton: document.getElementById("reciteAllButton"),
+      prevSurahButton: document.getElementById("prevSurahButton"),
+      nextSurahButton: document.getElementById("nextSurahButton"),
+      status: document.getElementById("status"),
+      surahList: document.getElementById("surahList"),
+      ayahList: document.getElementById("ayahList"),
+      readerTitle: document.getElementById("readerTitle"),
+      readerMeta: document.getElementById("readerMeta"),
+      readerArabicTitle: document.getElementById("readerArabicTitle"),
+      currentTitle: document.getElementById("currentTitle"),
+      currentArabic: document.getElementById("currentArabic"),
+      surahProgressText: document.getElementById("surahProgressText"),
+      timeProgressText: document.getElementById("timeProgressText"),
+      timeBar: document.getElementById("timeBar"),
+      installNote: document.getElementById("installNote")
+    };
+
+    let surahs = [];
+    let currentSurah = null;
+    let currentArabicAyahs = [];
+    let currentTranslationAyahs = [];
+    let reciteAllMode = false;
+    let isLoading = false;
+    let deferredInstallPrompt = null;
+
+    const audio = new Audio();
+    audio.preload = "metadata";
+    audio.crossOrigin = "anonymous";
+
+    function normalize(value) {
+      return String(value || "").toLowerCase().replace(/[\u064B-\u065F\u0670]/g, "").trim();
+    }
+
+    function setStatus(message, loading = false) {
+      elements.status.innerHTML = loading ? `<span class="loader"></span>${message}` : message;
+    }
+
+    function formatTime(seconds) {
+      if (!Number.isFinite(seconds) || seconds < 0) return "0:00";
+      const total = Math.floor(seconds);
+      const hours = Math.floor(total / 3600);
+      const minutes = Math.floor((total % 3600) / 60);
+      const secs = total % 60;
+
+      if (hours > 0) {
+        return `${hours}:${String(minutes).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+      }
+
+      return `${minutes}:${String(secs).padStart(2, "0")}`;
+    }
+
+    function padSurah(number) {
+      return String(number).padStart(3, "0");
+    }
+
+    function getFullSurahAudioUrl(surah) {
+      const reciter = elements.reciterSelect.value || "mishaari_raashid_al_3afaasee";
+      return `${AUDIO_BASE}${reciter}/${padSurah(surah.number)}.mp3`;
+    }
+
+    async function fetchJson(url) {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`Request failed: ${response.status}`);
+      const payload = await response.json();
+      if (payload.code !== 200 || payload.status !== "OK") throw new Error(payload.status || "API error");
+      return payload.data;
+    }
+
+    function renderSurahList() {
+      const query = normalize(elements.searchInput.value);
+      const visible = surahs.filter(surah => {
+        const haystack = normalize(`${surah.number} ${surah.name} ${surah.englishName} ${surah.englishNameTranslation} ${surah.revelationType}`);
+        return !query || haystack.includes(query);
+      });
+
+      elements.surahList.innerHTML = visible.map(surah => `
+        <button class="surah-button ${currentSurah && surah.number === currentSurah.number ? "active" : ""}" data-surah="${surah.number}">
+          <span class="surah-number">${surah.number}</span>
+          <span>
+            <span class="surah-name">${surah.englishName}</span>
+            <span class="surah-meta">${surah.englishNameTranslation}, ${surah.numberOfAyahs} ayahs</span>
+          </span>
+          <span class="surah-arabic-name">${surah.name}</span>
+        </button>
+      `).join("") || `<div class="empty">No surahs match that search.</div>`;
+    }
+
+    function updateHeaders() {
+      if (!currentSurah) return;
+
+      elements.readerTitle.textContent = `${currentSurah.number}. ${currentSurah.englishName}`;
+      elements.readerMeta.textContent = `${currentSurah.englishNameTranslation}, ${currentSurah.revelationType}, ${currentSurah.numberOfAyahs} ayahs.`;
+      elements.readerArabicTitle.textContent = currentSurah.name;
+      elements.currentTitle.textContent = currentSurah.englishName;
+      elements.currentArabic.textContent = currentSurah.name;
+      elements.surahProgressText.textContent = `Surah ${currentSurah.number} of 114`;
+    }
+
+    function setMediaSessionMetadata() {
+      if (!("mediaSession" in navigator) || !currentSurah) return;
+
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: `Surah ${currentSurah.englishName}`,
+        artist: "Mishary Rashid Alafasy",
+        album: "Quran Reciter",
+        artwork: [
+          { src: "./icons/icon-192.png", sizes: "192x192", type: "image/png" },
+          { src: "./icons/icon-512.png", sizes: "512x512", type: "image/png" }
+        ]
+      });
+
+      navigator.mediaSession.setActionHandler("play", () => resumeAudio());
+      navigator.mediaSession.setActionHandler("pause", () => pauseAudio());
+      navigator.mediaSession.setActionHandler("previoustrack", () => previousSurah(true));
+      navigator.mediaSession.setActionHandler("nexttrack", () => nextSurah(true));
+      navigator.mediaSession.setActionHandler("stop", () => stopAudio(true));
+    }
+
+    function selectSurah(number) {
+      const found = surahs.find(surah => surah.number === Number(number));
+      if (!found) return;
+
+      stopAudio(false);
+      currentSurah = found;
+      currentArabicAyahs = [];
+      currentTranslationAyahs = [];
+      reciteAllMode = false;
+      updateHeaders();
+      renderSurahList();
+      elements.ayahList.innerHTML = `<div class="empty">${currentSurah.englishName} is selected. Press Play Surah to load text and play the full recitation.</div>`;
+      setStatus(`Selected Surah ${currentSurah.number}, ${currentSurah.englishName}.`);
+    }
+
+    function renderAyahs() {
+      if (!currentArabicAyahs.length) {
+        elements.ayahList.innerHTML = `<div class="empty">No ayahs loaded.</div>`;
+        return;
+      }
+
+      elements.ayahList.innerHTML = currentArabicAyahs.map((ayah, index) => {
+        const translation = currentTranslationAyahs[index]?.text || "";
+        return `
+          <article class="ayah" id="ayah-${index + 1}">
+            <div class="ayah-index">${ayah.numberInSurah}</div>
+            <div>
+              <p class="arabic">${ayah.text}</p>
+              ${translation ? `<p class="translation">${translation}</p>` : ""}
+            </div>
+          </article>
+        `;
+      }).join("");
+    }
+
+    async function loadSurahText(force = false) {
+      if (isLoading || !currentSurah) return;
+      if (!force && currentArabicAyahs.length) return;
+
+      isLoading = true;
+      setButtonsDisabled(true);
+      setStatus(`Loading ${currentSurah.englishName} text...`, true);
+
+      try {
+        const translationEdition = elements.translationSelect.value;
+        const arabicPromise = fetchJson(`${API_BASE}/surah/${currentSurah.number}/quran-uthmani`);
+        const translationPromise = translationEdition === "none"
+          ? Promise.resolve({ ayahs: [] })
+          : fetchJson(`${API_BASE}/surah/${currentSurah.number}/${translationEdition}`);
+
+        const [arabicData, translationData] = await Promise.all([arabicPromise, translationPromise]);
+
+        currentArabicAyahs = arabicData.ayahs || [];
+        currentTranslationAyahs = translationData.ayahs || [];
+
+        currentSurah = {
+          ...currentSurah,
+          name: arabicData.name || currentSurah.name,
+          englishName: arabicData.englishName || currentSurah.englishName,
+          englishNameTranslation: arabicData.englishNameTranslation || currentSurah.englishNameTranslation,
+          numberOfAyahs: arabicData.numberOfAyahs || currentSurah.numberOfAyahs,
+          revelationType: arabicData.revelationType || currentSurah.revelationType
+        };
+
+        updateHeaders();
+        renderAyahs();
+        renderSurahList();
+        setStatus(`Loaded ${currentSurah.englishName}.`);
+      } catch (error) {
+        console.error(error);
+        setStatus(`Could not load text. Audio may still work. Error: ${error.message}`);
+      } finally {
+        isLoading = false;
+        setButtonsDisabled(false);
+      }
+    }
+
+    async function playSurah() {
+      if (!currentSurah && surahs[0]) currentSurah = surahs[0];
+      if (!currentSurah) return;
+
+      reciteAllMode = false;
+      await playCurrentSurah();
+    }
+
+    async function playCurrentSurah() {
+      if (!currentSurah) return;
+
+      await loadSurahText();
+
+      const source = getFullSurahAudioUrl(currentSurah);
+      audio.src = source;
+      audio.load();
+      updateHeaders();
+      setMediaSessionMetadata();
+
+      try {
+        await audio.play();
+        setStatus(`Playing full Surah ${currentSurah.englishName}. You can lock your phone after it starts.`);
+      } catch (error) {
+        console.error(error);
+        setStatus("The browser blocked playback. Press Play Surah again after touching the page.");
+      }
+    }
+
+    async function reciteAll() {
+      if (!currentSurah && surahs[0]) currentSurah = surahs[0];
+      if (!currentSurah) return;
+
+      reciteAllMode = true;
+      await playCurrentSurah();
+      setStatus(`Recite All started from ${currentSurah.englishName}.`);
+    }
+
+    function pauseAudio() {
+      audio.pause();
+      if ("mediaSession" in navigator) navigator.mediaSession.playbackState = "paused";
+      setStatus("Paused.");
+    }
+
+    async function resumeAudio() {
+      try {
+        await audio.play();
+        if ("mediaSession" in navigator) navigator.mediaSession.playbackState = "playing";
+        setStatus("Resumed.");
+      } catch {
+        setStatus("Could not resume. Press Play Surah again.");
+      }
+    }
+
+    function stopAudio(updateStatus = true) {
+      audio.pause();
+      audio.removeAttribute("src");
+      audio.load();
+      elements.timeBar.style.width = "0%";
+      elements.timeProgressText.textContent = "0:00 / 0:00";
+      if ("mediaSession" in navigator) navigator.mediaSession.playbackState = "none";
+      updateHeaders();
+      if (updateStatus) setStatus("Stopped.");
+    }
+
+    async function nextSurah(shouldPlay = false) {
+      if (!currentSurah) return;
+      const next = surahs.find(surah => surah.number === currentSurah.number + 1);
+      if (!next) {
+        stopAudio(false);
+        setStatus("You reached An-Naas, the final surah.");
+        return;
+      }
+
+      currentSurah = next;
+      currentArabicAyahs = [];
+      currentTranslationAyahs = [];
+      updateHeaders();
+      renderSurahList();
+      elements.ayahList.innerHTML = `<div class="empty">${currentSurah.englishName} selected.</div>`;
+
+      if (shouldPlay) await playCurrentSurah();
+    }
+
+    async function previousSurah(shouldPlay = false) {
+      if (!currentSurah) return;
+      const previous = surahs.find(surah => surah.number === currentSurah.number - 1);
+      if (!previous) {
+        setStatus("You are already at Al-Fatihah.");
+        return;
+      }
+
+      currentSurah = previous;
+      currentArabicAyahs = [];
+      currentTranslationAyahs = [];
+      updateHeaders();
+      renderSurahList();
+      elements.ayahList.innerHTML = `<div class="empty">${currentSurah.englishName} selected.</div>`;
+
+      if (shouldPlay) await playCurrentSurah();
+    }
+
+    function setButtonsDisabled(disabled) {
+      [
+        elements.playButton,
+        elements.reciteAllButton,
+        elements.prevSurahButton,
+        elements.nextSurahButton
+      ].forEach(button => button.disabled = disabled);
+    }
+
+    async function loadInitialData() {
+      setStatus("Loading surah list...", true);
+
+      try {
+        const surahData = await fetchJson(`${API_BASE}/surah`);
+        surahs = Array.isArray(surahData) ? surahData : [];
+        currentSurah = surahs[0] || null;
+
+        renderSurahList();
+        updateHeaders();
+
+        elements.ayahList.innerHTML = currentSurah
+          ? `<div class="empty">Select any surah, then press Play Surah.</div>`
+          : `<div class="empty">Could not load the surah list.</div>`;
+
+        setStatus("Ready. Start playback, then lock your phone.");
+      } catch (error) {
+        console.error(error);
+        elements.ayahList.innerHTML = `<div class="empty">Could not load Quran data. This app needs internet access for the first load and for streamed audio.</div>`;
+        setStatus(`Could not load data. Error: ${error.message}`);
+      }
+    }
+
+    async function registerServiceWorker() {
+      if (!("serviceWorker" in navigator)) {
+        elements.installNote.textContent = "Your browser does not support service workers, so install mode may not work.";
+        return;
+      }
+
+      try {
+        await navigator.serviceWorker.register("./service-worker.js");
+      } catch (error) {
+        console.warn("Service worker registration failed.", error);
+      }
+    }
+
+    window.addEventListener("beforeinstallprompt", event => {
+      event.preventDefault();
+      deferredInstallPrompt = event;
+      elements.installButton.hidden = false;
+      elements.installNote.textContent = "Install is available. Press Install App, or use your browser menu.";
+    });
+
+    elements.installButton.addEventListener("click", async () => {
+      if (!deferredInstallPrompt) return;
+      deferredInstallPrompt.prompt();
+      await deferredInstallPrompt.userChoice;
+      deferredInstallPrompt = null;
+      elements.installButton.hidden = true;
+    });
+
+    elements.surahList.addEventListener("click", event => {
+      const button = event.target.closest("[data-surah]");
+      if (!button) return;
+      selectSurah(button.dataset.surah);
+    });
+
+    elements.searchInput.addEventListener("input", renderSurahList);
+
+    elements.translationSelect.addEventListener("change", async () => {
+      currentArabicAyahs = [];
+      currentTranslationAyahs = [];
+      await loadSurahText(true);
+    });
+
+    elements.reciterSelect.addEventListener("change", () => {
+      stopAudio(false);
+      setStatus("Reciter changed. Press Play Surah again.");
+    });
+
+    elements.playButton.addEventListener("click", playSurah);
+    elements.pauseButton.addEventListener("click", pauseAudio);
+    elements.resumeButton.addEventListener("click", resumeAudio);
+    elements.stopButton.addEventListener("click", () => stopAudio(true));
+    elements.reciteAllButton.addEventListener("click", reciteAll);
+    elements.prevSurahButton.addEventListener("click", () => previousSurah(true));
+    elements.nextSurahButton.addEventListener("click", () => nextSurah(true));
+
+    audio.addEventListener("play", () => {
+      if ("mediaSession" in navigator) navigator.mediaSession.playbackState = "playing";
+    });
+
+    audio.addEventListener("pause", () => {
+      if ("mediaSession" in navigator && audio.src) navigator.mediaSession.playbackState = "paused";
+    });
+
+    audio.addEventListener("ended", async () => {
+      if (reciteAllMode) {
+        await nextSurah(true);
+      } else {
+        setStatus(`${currentSurah.englishName} finished.`);
+      }
+    });
+
+    audio.addEventListener("timeupdate", () => {
+      const current = audio.currentTime || 0;
+      const duration = audio.duration || 0;
+      const percent = duration ? Math.min(100, (current / duration) * 100) : 0;
+      elements.timeBar.style.width = `${percent}%`;
+      elements.timeProgressText.textContent = `${formatTime(current)} / ${formatTime(duration)}`;
+
+      if ("mediaSession" in navigator && "setPositionState" in navigator.mediaSession && duration) {
+        try {
+          navigator.mediaSession.setPositionState({
+            duration,
+            playbackRate: audio.playbackRate,
+            position: current
+          });
+        } catch {}
+      }
+    });
+
+    audio.addEventListener("error", () => {
+      setStatus("Audio failed to play. Try again, or check your internet connection.");
+    });
+
+    registerServiceWorker();
+    loadInitialData();
+  </script>
+</body>
+</html>
